@@ -74,12 +74,11 @@ router.post('/', async (req, res) => {
   }
 });
 
+// POST /api/posts/{id}/comments
 router.post('/:id/comments', async (req, res) => {
   try {
-    const commentData = { ...req.body, id: req.params.id };
-
+    const { id } = req.params;
     const comment = await Posts.insertComment(commentData);
-
     if (!id) {
       res
         .status(404)
@@ -91,6 +90,26 @@ router.post('/:id/comments', async (req, res) => {
     } else {
       res.status(201).json(comment);
     }
+  } catch (error) {
+    // Log error
+    console.log(error);
+    res.status(500).json({
+      error: 'There was an error while saving the comment to the database'
+    });
+  }
+});
+
+//DELETE /api/posts:id
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const delPost = await Posts.remove(req.params.id);
+
+    !id
+      ? res
+          .status(404)
+          .json({ message: 'The post with the specified ID does not exist.' })
+      : res.status(200).json(delPost);
   } catch (error) {
     // Log error
     console.log(error);
