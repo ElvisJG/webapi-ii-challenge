@@ -79,18 +79,20 @@ router.post('/:id/comments', async (req, res) => {
   try {
     const { id } = req.params;
     const { text } = req.body;
-    const comment = await Posts.insertComment(req.body);
+    const commentInfo = { ...req.body, post_id: req.params.id };
+    const comment = await Posts.insertComment(commentInfo);
+
     if (!id) {
       res
         .status(404)
         .json({ message: 'The post with the specified ID does not exist.' });
-    } else if (text.length === 0) {
-      res
-        .status(400)
-        .json({ errorMessage: 'Please provide text for the comment.' });
-    } else {
-      res.status(201).json(comment);
     }
+
+    text.length === 0
+      ? res.status(400).json({
+          errorMessage: 'Please provide text for the comment.'
+        })
+      : res.status(201).json(comment);
   } catch (error) {
     // Log error
     console.log(error);
@@ -132,6 +134,7 @@ router.put('/:id', async (req, res) => {
         .status(404)
         .json({ message: 'The post with the specified ID does not exist.' });
     }
+
     !title || !contents
       ? res.status(400).json({
           errorMessage: 'Please provide title and contents for the the post.'
