@@ -78,12 +78,13 @@ router.post('/', async (req, res) => {
 router.post('/:id/comments', async (req, res) => {
   try {
     const { id } = req.params;
-    const comment = await Posts.insertComment(commentData);
+    const { text } = req.body;
+    const comment = await Posts.insertComment(req.body);
     if (!id) {
       res
         .status(404)
         .json({ message: 'The post with the specified ID does not exist.' });
-    } else if (commentData.text.length === 0) {
+    } else if (text.length === 0) {
       res
         .status(400)
         .json({ errorMessage: 'Please provide text for the comment.' });
@@ -94,7 +95,7 @@ router.post('/:id/comments', async (req, res) => {
     // Log error
     console.log(error);
     res.status(500).json({
-      error: 'There was an error while saving the comment to the database'
+      error: 'There was an error while saving the comment to the database.'
     });
   }
 });
@@ -114,7 +115,33 @@ router.delete('/:id', async (req, res) => {
     // Log error
     console.log(error);
     res.status(500).json({
-      error: 'There was an error while saving the comment to the database'
+      error: 'The post could not be removed.'
+    });
+  }
+});
+
+// PUT /api/posts/:id
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, contents } = req.body;
+    const post = await Posts.update(req.params.id, req.body);
+
+    if (!id) {
+      res
+        .status(404)
+        .json({ message: 'The post with the specified ID does not exist.' });
+    }
+    !title || !contents
+      ? res.status(400).json({
+          errorMessage: 'Please provide title and contents for the the post.'
+        })
+      : res.status(200).json(post);
+  } catch (error) {
+    // Log error
+    console.log(error);
+    res.status(500).json({
+      error: 'The post information could not be modified'
     });
   }
 });
